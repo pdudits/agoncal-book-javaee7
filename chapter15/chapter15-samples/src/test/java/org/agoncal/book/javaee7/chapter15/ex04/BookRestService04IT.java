@@ -130,4 +130,47 @@ public class BookRestService04IT {
     assertEquals("The Hitchhiker's Guide to the Galaxy", book.getTitle());
     assertEquals("Science fiction comedy book", book.getDescription());
   }
+  
+  @Test
+  public void shouldCreateABookViaPlaintext() {
+      Response response = client.target(uri).path("/04/books")
+              .request()
+              .post(Entity.entity("Java EE Patterns","text/plain"));
+      
+      assertEquals(201, response.getStatus());
+      
+      URI bookUri = response.getLocation();
+      System.out.println(bookUri);
+      Book04 book = client.target(bookUri)
+              .request(MediaType.APPLICATION_XML)
+              .get(Book04.class);
+      assertEquals("Java EE Patterns", book.getTitle());
+
+      response = client.target(bookUri).request()
+              .delete();
+      
+      assertEquals(204, response.getStatus());
+  }
+  
+  @Test
+  public void shouldDeleteABookViaLink() {
+      Response response = client.target(uri).path("/04/books")
+              .request()
+              .post(Entity.entity("Java EE Patterns","text/plain"));
+      
+      assertEquals(201, response.getStatus());
+      
+      URI bookUri = response.getLocation();
+      System.out.println(bookUri);
+      response = client.target(bookUri)
+              .request(MediaType.APPLICATION_XML)
+              .get();
+      Link deleteLink = response.getLink("DELETE");
+      Book04 book = response.readEntity(Book04.class);
+      assertEquals("Java EE Patterns", book.getTitle());
+      response = client.target(deleteLink).request()
+              .delete();
+      
+      assertEquals(204, response.getStatus());
+  }  
 }

@@ -10,6 +10,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 import java.net.URI;
+import java.util.NoSuchElementException;
+import javax.ws.rs.core.Link;
 
 /**
  * @author Antonio Goncalves
@@ -38,6 +40,7 @@ public class BookRestService04 {
 
   @Context
   private UriInfo uriInfo;
+  
   //  @Inject
   @PersistenceContext(unitName = "chapter15PU")
   private EntityManager em;
@@ -55,10 +58,16 @@ public class BookRestService04 {
   }
 
   @GET
+ // @Path("{id:\\d+}")
   @Path("{id}")
   @Produces(MediaType.APPLICATION_XML)
-  public Book04 getBook(@PathParam("id") Long bookId) {
-    return em.find(Book04.class, bookId);
+  public Response getBook(@PathParam("id") Long bookId) {
+    return Response.ok(em.find(Book04.class, bookId))
+            .links(
+                    Link.fromMethod(BookRestService04.class, "deleteBook")
+                            .rel("DELETE")
+                    .build(bookId))
+            .build();
   }
 
   @POST
@@ -82,7 +91,15 @@ public class BookRestService04 {
   @DELETE
   @Path("{id}")
   public Response deleteBook(@PathParam("id") Long bookId) {
-    em.remove(em.find(Book04.class, bookId));
+    final Book04 book = em.find(Book04.class, bookId);
+    if (book == null) {
+//        return Response.status(Response.Status.NOT_FOUND)
+//                .entity("Book "+bookId+" does not exist")
+//                .build();
+//        throw new NotFoundException("Book "+bookId+ " does not exist");
+        throw new NoSuchElementException("Book "+bookId+ " does not exist");
+    }
+    em.remove(book);
     return Response.noContent().build();
   }
 }
