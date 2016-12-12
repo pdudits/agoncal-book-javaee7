@@ -16,6 +16,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import java.io.StringWriter;
 import java.net.URI;
+import javax.ws.rs.core.Link;
 import org.glassfish.embeddable.GlassFish;
 import org.glassfish.embeddable.GlassFishException;
 import org.glassfish.embeddable.GlassFishProperties;
@@ -23,6 +24,7 @@ import org.glassfish.embeddable.GlassFishRuntime;
 import org.junit.AfterClass;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import org.junit.BeforeClass;
 
@@ -111,14 +113,16 @@ public class BookRestService04IT {
     m.marshal(book, writer);
 
     // when
-    Response response = client.target(uri).path("/04/books").request().post(Entity.entity(book, "application/xml"));
+    Response response = client.target(uri).path("/04/books")
+            .request().post(Entity.entity(book, "application/xml"));
 
     // then
     assertEquals(201, response.getStatus());
     assertTrue(response.getLocation().toString().startsWith("http://localhost:8080/chapter15-samples-1.0/rs/04/books"));
 
     // when
-    response = client.target(response.getLocation()).request(MediaType.APPLICATION_XML).get();
+    response = client.target(response.getLocation())
+            .request(MediaType.APPLICATION_XML).get();
 
     // then
     assertEquals(200, response.getStatus());
@@ -173,4 +177,16 @@ public class BookRestService04IT {
       
       assertEquals(204, response.getStatus());
   }  
+  
+  @Test
+  public void test_Should_Return_Not_Found_When_Deleting_Non_Existing() {
+      Response response = client.target(uri).path("/04/books")
+              .path("999")
+              .request()
+              .delete();
+      
+      assertEquals(404, response.getStatus());
+      String body = response.readEntity(String.class);
+      assertEquals("Book 999 does not exist at 04/books/999", body);
+  }
 }

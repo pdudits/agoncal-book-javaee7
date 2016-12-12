@@ -11,6 +11,7 @@ import javax.ws.rs.core.Application;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import org.agoncal.book.javaee7.chapter15.ex04.NoSuchElementMapper;
 
 /**
  * @author Antonio Goncalves
@@ -37,6 +38,7 @@ public class ApplicationConfig extends Application {
     c.add(BookRestService03.class);
     c.add(BookRestService04.class);
     c.add(ItemRestService05.class);
+    c.add(NoSuchElementMapper.class);
     c.add(CustomerRestService15.class);
 
     c.add(MOXyJsonProvider.class);
